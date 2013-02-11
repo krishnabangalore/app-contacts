@@ -1,25 +1,27 @@
-var chat1 = {}; //this will hold other variables to avoid global namespace pollution
-var chat1Elements = {}; //this will hold html elements so we can avoid excessive DOM search
+/*Modified By Krishna Bangalore, Elena Medvedeva - Latest Changes 8/2/2013 */
+
+var chat = {}; //this will hold other variables to avoid global namespace pollution
+var chatElements = {}; //this will hold html elements so we can avoid excessive DOM search
 
 // Set initial values
-chat1.users = [];
-chat1.useMyDeck = false;
+chat.users = [];
+chat.useMyDeck = false;
 
-chat1.settings = {};
-chat1.settings.predefined = {
+chat.settings = {};
+chat.settings.predefined = {
 	color: "black",
 	fontFamily: "sans-serif",          
 	fontSize: "100%"
 };
-chat1.settings.opponent = {};
-chat1.settings.mine = {};
+chat.settings.opponent = {};
+chat.settings.mine = {};
 //we can't copy the whole object, because they would be tied together;
 //possible TODO: add object cloning function (but right now this is enough)
-chat1.settings.opponent.color = chat1.settings.mine.color = chat1.settings.predefined.color;
-chat1.settings.opponent.fontFamily = chat1.settings.mine.fontFamily = chat1.settings.predefined.fontFamily;
-chat1.settings.opponent.fontSize = chat1.settings.mine.fontSize = chat1.settings.predefined.fontSize;
+chat.settings.opponent.color = chat.settings.mine.color = chat.settings.predefined.color;
+chat.settings.opponent.fontFamily = chat.settings.mine.fontFamily = chat.settings.predefined.fontFamily;
+chat.settings.opponent.fontSize = chat.settings.mine.fontSize = chat.settings.predefined.fontSize;
 
-chat1.invisible = false;
+chat.invisible = false;
 
 
 /* GENERAL USE functions */
@@ -53,9 +55,9 @@ function sendStatus(type, engaged) {
 	var ev = eventAPIToUse.createWebinosEvent(type);
 	ev.payload = {
 		type: type,
-		user: chat1.myName
+		user: chat.myName
 	};
-	if(engaged) ev.payload.status = chat1.engaged;
+	if(engaged) ev.payload.status = chat.engaged;
 	ev.dispatchWebinosEvent(callback);
 };
 
@@ -64,8 +66,8 @@ function sendMsg(msgType, msgData) {
    	var ev = eventAPIToUse.createWebinosEvent();
    	ev.payload = {
 		type: msgType,
-		sender: chat1.myName,
-		receiver: chat1.oName,
+		sender: chat.myName,
+		receiver: chat.oName,
 		data: msgData
 	};
    	ev.dispatchWebinosEvent(callback);
@@ -129,12 +131,12 @@ $(document).ready(function() {
 		onFound: function(service){
 			console.log("Chat:events service found!!", service);
 			eventAPIToUse = service;
-			chat1.unavailableNames = [];
-			chat1.myName = webinos.messageHandler.getOwnId();
+			chat.unavailableNames = [];
+			chat.myName = webinos.messageHandler.getOwnId();
 
 			var listenerID = eventAPIToUse.addWebinosEventListener(function(event){
 				if (event.payload.type === 'nameResponse') {
-					chat1.unavailableNames.push(event.payload.user);
+					chat.unavailableNames.push(event.payload.user);
 				}
 			});
 
@@ -145,38 +147,38 @@ $(document).ready(function() {
 	});
 
 	//rip out of dom elements, that we will frequently use later
-	chat1Elements.status = document.getElementById("status-text");
-	chat1Elements.contButton = document.getElementById("cont-button");
-	chat1Elements.onlineContacts = document.getElementById("onlineContacts");
-	chat1Elements.liveInvitations = document.getElementById("liveInvitations");
+	chatElements.status = document.getElementById("status-text");
+	chatElements.contButton = document.getElementById("cont-button");
+	chatElements.onlineContacts = document.getElementById("onlineContacts");
+	chatElements.liveInvitations = document.getElementById("liveInvitations");
 
-	chat1Elements.home = document.getElementById("home");
-	chat1Elements.app = document.getElementById("app");
-	chat1Elements.settings = document.getElementById("sett");
-	chat1Elements.password = document.getElementById("password");
+	chatElements.home = document.getElementById("home");
+	chatElements.app = document.getElementById("app");
+	chatElements.settings = document.getElementById("sett");
+	chatElements.password = document.getElementById("password");
 
-	chat1Elements.homeScreenName = document.getElementById("myName2");
-	chat1Elements.frontStatus = document.getElementById("frontStatus");
+	chatElements.homeScreenName = document.getElementById("myName2");
+	chatElements.frontStatus = document.getElementById("frontStatus");
 
-	chat1Elements.newElem = document.getElementById("newElem");
-	chat1Elements.endElem = document.getElementById("endElem");
-	chat1Elements.endButton = document.getElementById("endButton");
-	chat1Elements.setButton = document.getElementById("setButton");
+	chatElements.newElem = document.getElementById("newElem");
+	chatElements.endElem = document.getElementById("endElem");
+	chatElements.endButton = document.getElementById("endButton");
+	chatElements.setButton = document.getElementById("setButton");
 
-	chat1Elements.chat = document.getElementById("chat");
-	chat1Elements.chatBox = document.getElementById("chatBox");
-	chat1Elements.chatText = document.getElementById("chatText");
-	chat1Elements.chatButton = document.getElementById("chatButton");
-	chat1Elements.chatInput = document.getElementById("chatInput");
-	chat1Elements.textButton = document.getElementById("textButton");
+	chatElements.chat = document.getElementById("chat");
+	chatElements.chatBox = document.getElementById("chatBox");
+	chatElements.chatText = document.getElementById("chatText");
+	chatElements.chatButton = document.getElementById("chatButton");
+	chatElements.chatInput = document.getElementById("chatInput");
+	chatElements.textButton = document.getElementById("textButton");
 
 	//set initial onclick actions
-	chat1Elements.textButton.onclick = function() {showTextChat();};
-	chat1Elements.endButton.onclick = function() {confirmExitapp();};
-	chat1Elements.setButton.onclick = function() {setSettings();};
-	chat1Elements.chatButton.onclick = function() {sendChat();};
+	chatElements.textButton.onclick = function() {showTextChat();};
+	chatElements.endButton.onclick = function() {confirmExitapp();};
+	chatElements.setButton.onclick = function() {setSettings();};
+	chatElements.chatButton.onclick = function() {sendChat();};
 
-	chat1Elements.chatInput.onkeypress = function() {if (event.keyCode==13) sendChat()};
+	chatElements.chatInput.onkeypress = function() {if (event.keyCode==13) sendChat()};
 
 	document.getElementById("cancelsettings").onclick = function() {cancelSettings();};
 	document.getElementById("savesettings").onclick = function() {saveSettings();};
@@ -190,15 +192,15 @@ window.onbeforeunload = function(){ //that's probably unreliable
 
 
 function nameInput(listenerID) {
-	chat1.myName = prompt("please, insert your name");
+	chat.myName = prompt("please, insert your name");
 
-	while (chat1.myName === '' || chat1.unavailableNames.indexOf(chat1.myName) !== -1) {
-		chat1.myName = prompt("please insert a different name");
+	while (chat.myName === '' || chat.unavailableNames.indexOf(chat.myName) !== -1) {
+		chat.myName = prompt("please insert a different name");
 	}
 
 	eventAPIToUse.removeWebinosEventListener(listenerID);
 
-	if (chat1.myName !== null && chat1.myName !== undefined && chat1.myName !== '') {
+	if (chat.myName !== null && chat.myName !== undefined && chat.myName !== '') {
 		start();
 		setScreenName();
 	} else {
@@ -213,8 +215,8 @@ var start = function() {
 
 	eventAPIToUse.addWebinosEventListener(function(event){
 		//debug
-		/*for(var i in chat1.users) {
-			console.log(chat1.users[i]);
+		/*for(var i in chat.users) {
+			console.log(chat.users[i]);
 		}*/
 
 		switch(event.payload.type){
@@ -224,27 +226,27 @@ var start = function() {
 			break;
 
 		case 'login':
-			if (event.payload.user !== chat1.myName){
-				if(typeof chat1.users[event.payload.user] === 'undefined' || chat1.users[event.payload.user] === 'offline'){
-					chat1.users[event.payload.user] = event.addressing.source;
+			if (event.payload.user !== chat.myName){
+				if(typeof chat.users[event.payload.user] === 'undefined' || chat.users[event.payload.user] === 'offline'){
+					chat.users[event.payload.user] = event.addressing.source;
 					if(userNotListed(event.payload.user)){
 						addContact(event.payload.user);
 					}
 				}
 				//if im not invisible i send the event online
-				if(!chat1.invisible) {
+				if(!chat.invisible) {
 					sendStatus('online', true);
 				}
 			}
 			break;
 
 		case 'online':	//modified the filter for the policy management A. Longo 24.04.12
-			if (event.payload.user !== chat1.myName &&
-					(typeof chat1.users[event.payload.user] === 'undefined' || chat1.users[event.payload.user] == 'offline')
+			if (event.payload.user !== chat.myName &&
+					(typeof chat.users[event.payload.user] === 'undefined' || chat.users[event.payload.user] == 'offline')
 			){ // Filter
-				chat1.users[event.payload.user] = event.addressing.source;
+				chat.users[event.payload.user] = event.addressing.source;
 
-				//if the player status is not chat1.engaged, i can invite him to play
+				//if the player status is not chat.engaged, i can invite him to play
 				if(typeof event.payload.status == 'undefined' || event.payload.status == '') {
 					addContact(event.payload.user);
 				} else { //otherwise the UI shows that the player is currently chatting
@@ -255,15 +257,15 @@ var start = function() {
 			break;
 
 		case 'logout':
-			chat1.users[event.payload.user] = 'offline';
+			chat.users[event.payload.user] = 'offline';
 
-			if (chat1.engaged != event.payload.user) {
+			if (chat.engaged != event.payload.user) {
 				removeContact(event.payload.user);
 			} else {
 				//TODO check why it's like that, with a loop, instead of a remove
-				chat1Elements.onlineContacts.innerHTML = '';
-				for (var user in chat1.users) {
-					if (chat1.users[user] !== 'offline') {
+				chatElements.onlineContacts.innerHTML = '';
+				for (var user in chat.users) {
+					if (chat.users[user] !== 'offline') {
 						addContact(user);
 					}
 				}
@@ -271,13 +273,13 @@ var start = function() {
 			break;
 
 		case 'appClosed':
-				if(event.payload.user === chat1.engaged) {
-					setStatusMessage(chat1.oName + " closed the app!");
+				if(event.payload.user === chat.engaged) {
+					setStatusMessage(chat.oName + " closed the app!");
 
 					resetApp();
 
 					//if i'm not invisible i send the event loging, showing my presence
-					if(!chat1.invisible) {
+					if(!chat.invisible) {
 						sendStatus('login');
 					}
 
@@ -288,20 +290,20 @@ var start = function() {
 			break;
 
 		case 'invite':
-			if(event.payload.invitee === chat1.myName && !invitationExists(user)) {
+			if(event.payload.invitee === chat.myName && !invitationExists(user)) {
 				addInvitation(event.payload.inviter);
 			}
 			break;
 
 		case 'cancelInvite':
-			if(event.payload.invitee === chat1.myName) {
+			if(event.payload.invitee === chat.myName) {
 				removeInvitation(event.payload.inviter);
 			}
 			break;
 
 		case 'acceptInvitation':
-			if(event.payload.inviter === chat1.myName) {
-				chat1.engaged = event.payload.invitee;
+			if(event.payload.inviter === chat.myName) {
+				chat.engaged = event.payload.invitee;
                // showTextChat();
 				setappUI();
 				showapp();
@@ -312,7 +314,7 @@ var start = function() {
 			break;
 
 		case 'chatting':
-			if(event.payload.user != chat1.myName) {
+			if(event.payload.user != chat.myName) {
 				if (userNotListed(event.payload.user)) {
 					addContact(event.payload.user);
 					setContactchatting(event.payload.user);
@@ -326,7 +328,7 @@ var start = function() {
 			break;
 
 		case 'notchatting':
-			if(event.payload.user != chat1.myName) {
+			if(event.payload.user != chat.myName) {
 				if (!userNotListed(event.payload.user)) {
 					resetContact(event.payload.user);
 				}
@@ -334,26 +336,26 @@ var start = function() {
 			break;
 
 		case 'sendDeckData':
-			if(event.payload.receiver === chat1.myName) {
-				chat1.cardData = JSON.parse(event.payload.data);
+			if(event.payload.receiver === chat.myName) {
+				chat.cardData = JSON.parse(event.payload.data);
 				appInit();
 			}
 			break;
 
 		case 'chat':
-			if(event.payload.receiver === chat1.myName) {
+			if(event.payload.receiver === chat.myName) {
 				pasteChatMsg(event.payload.sender, event.payload.data);
 				scrollDownChatBox();
 
 				//indicates incoming chat messages
-				if(chat1Elements.chat.style.display == "none" || chat1Elements.chat.style.display == "") { //TODO?
-					chat1Elements.textButton.style.border = "3px solid red";
+				if(chatElements.chat.style.display == "none" || chatElements.chat.style.display == "") { //TODO?
+					chatElements.textButton.style.border = "3px solid red";
 				}
 			}
 			break;
 
 		case 'newapp':
-			if(event.payload.receiver === chat1.myName) {
+			if(event.payload.receiver === chat.myName) {
 				setStatusMessage(event.payload.sender+' wants to start a New chat', 'black');
 				setContButton('newchat');
 				appt.newappProposal = true;
@@ -361,13 +363,13 @@ var start = function() {
 			break;
 
 		case 'newappAccepted':
-			if(event.payload.receiver === chat1.myName) {
+			if(event.payload.receiver === chat.myName) {
 				newappAccepted(true);
 			}
 			break;
 
 		case 'newappRefused':
-			if(event.payload.receiver === chat1.myName) {
+			if(event.payload.receiver === chat.myName) {
 				appt.newappProposal = false;
 				updateUI();
 				appendStatusMessage(event.payload.sender+ " refused to start a new chat!");
@@ -385,8 +387,8 @@ var start = function() {
 	/*function getURLParameter(name) {
 		return decodeURI((RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]);
 	}
-	chat1.myName = getURLParameter("user");*/
-	if(!chat1.invisible) {
+	chat.myName = getURLParameter("user");*/
+	if(!chat.invisible) {
 		sendStatus('login');
 	}
 };
@@ -396,31 +398,31 @@ var start = function() {
 
 
 function setScreenName() {
-	chat1Elements.homeScreenName.innerHTML = "Your screen name: <b>"+chat1.myName+"</b>";
-	chat1Elements.frontStatus.innerHTML = "Connected to webinos";
+	chatElements.homeScreenName.innerHTML = "Your screen name: <b>"+chat.myName+"</b>";
+	chatElements.frontStatus.innerHTML = "Connected to webinos";
 }
 
 //2 "screens" per function should be sufficient, but more could be added
 function showHome() {
-	chat1Elements.home.style.display = 'block';
-	chat1Elements.app.style.display = 'none';
+	chatElements.home.style.display = 'block';
+	chatElements.app.style.display = 'none';
 
-	chat1Elements.homeScreenName.style.display = 'block';
+	chatElements.homeScreenName.style.display = 'block';
 }
 function showapp() {
-	chat1Elements.home.style.display = 'none';
-	chat1Elements.app.style.display = 'block';
+	chatElements.home.style.display = 'none';
+	chatElements.app.style.display = 'block';
 
-	chat1Elements.homeScreenName.style.display = 'none';
+	chatElements.homeScreenName.style.display = 'none';
 }
 
 function showSettings() {
-	chat1Elements.app.style.display = 'none';
-	chat1Elements.settings.style.display = 'block';
+	chatElements.app.style.display = 'none';
+	chatElements.settings.style.display = 'block';
 }
 function hideSettings() {
-	chat1Elements.app.style.display = 'block';
-	chat1Elements.settings.style.display = 'none';
+	chatElements.app.style.display = 'block';
+	chatElements.settings.style.display = 'none';
 }
 
 function showDecks() {
@@ -433,14 +435,14 @@ function hideDecks() {
 }
 
 function closePopup() {
- /*  chat1Elements.opacityBack.style.display = "none";
-   chat1Elements.popup.style.display = "none";
-   chat1Elements.password.value = ''; */
+ /*  chatElements.opacityBack.style.display = "none";
+   chatElements.popup.style.display = "none";
+   chatElements.password.value = ''; */
 }
 
 function openPopup() {
-  /* chat1Elements.opacityBack.style.display = "block";
-   chat1Elements.popup.style.display = "table"; */
+  /* chatElements.opacityBack.style.display = "block";
+   chatElements.popup.style.display = "table"; */
 }
 
 
@@ -471,7 +473,7 @@ function addContact(user) {
 	anch.appendChild(document.createTextNode("Invite"));
 	li.appendChild(anch);
 
-	chat1Elements.onlineContacts.appendChild(li);
+	chatElements.onlineContacts.appendChild(li);
 }
 function setContactchatting(user) {
 	var anch = document.getElementById('abuttonContact' + user);
@@ -502,7 +504,7 @@ function removeContact(user) {
 	//remove the player from the list
 	licontact = document.getElementById("liContact" + user);
 	if(licontact != null) {
-		chat1Elements.onlineContacts.removeChild(licontact);
+		chatElements.onlineContacts.removeChild(licontact);
 	}
 	//if the player who is logging out, had invited me, i remove the invitation
 	removeInvitation(user);
@@ -525,24 +527,24 @@ function addInvitation(user) {
 	anch.appendChild(document.createTextNode("Accept"));
 	li.appendChild(anch);
 
-	chat1Elements.liveInvitations.appendChild(li);
+	chatElements.liveInvitations.appendChild(li);
 }
 
 function removeInvitation(user) {
 	var invitation = document.getElementById("liInviter" + user);
-	if(invitation) chat1Elements.liveInvitations.removeChild(invitation);
+	if(invitation) chatElements.liveInvitations.removeChild(invitation);
 }
 
 function setStatusMessage(msg, className, add) { //you can skip the third param and use wrapper below; if no className - reset/remove classes
 	if(add) {
-		chat1Elements.status.innerHTML += '<br>'+msg;
+		chatElements.status.innerHTML += '<br>'+msg;
 	} else {
-		chat1Elements.status.innerHTML = msg;
+		chatElements.status.innerHTML = msg;
 	}
 	if(className) {
-		chat1Elements.status.className = className;
+		chatElements.status.className = className;
 	} else {
-		chat1Elements.status.removeAttribute("class");
+		chatElements.status.removeAttribute("class");
 	}
 }
 function appendStatusMessage(msg, className) {
@@ -571,27 +573,27 @@ function setContButton(opt) {
 			content = '<a class="button" onClick="newappAccepted(false);">Yes</a><a class="button red" onClick="exitapp();">No</a>';
 			break;
 	}
-	chat1Elements.contButton.innerHTML = content;
+	chatElements.contButton.innerHTML = content;
 }
 
 function showTextChat() {
-   chat1Elements.chat.style.display = 'table-row';
-   chat1Elements.textButton.onclick = function() { hideTextChat(); };
+   chatElements.chat.style.display = 'table-row';
+   chatElements.textButton.onclick = function() { hideTextChat(); };
    //added to remove the incoming message notification A. Longo 30.04
-   chat1Elements.textButton.style.border = 'none';
+   chatElements.textButton.style.border = 'none';
 }
 
 function hideTextChat() {
-   chat1Elements.chat.style.display = 'none';
-   chat1Elements.textButton.onclick = function() { showTextChat(); };
+   chatElements.chat.style.display = 'none';
+   chatElements.textButton.onclick = function() { showTextChat(); };
 }
 
 
 
 //app UI
 function setappUI(){
-//	chat1Elements.myName.innerHTML = chat1.myName;
-//	chat1Elements.opponentName.innerHTML = chat1.oName;
+//	chatElements.myName.innerHTML = chat.myName;
+//	chatElements.opponentName.innerHTML = chat.oName;
 //	document.getElementById("chatBox").innerHTML = '<input type="text" id="chatBx" height="200">';
 
 	//var newElem = document.getElementById("newElem");
@@ -604,7 +606,7 @@ function setappUI(){
 
 	//initialize chat settings
 
-	/*if(chat1.useMyDeck) {
+	/*if(chat.useMyDeck) {
 		choseDeck();
 		//showTextChat();
 	} else {
@@ -614,11 +616,11 @@ function setappUI(){
 
 //sends user's chat message
 function sendChat() {
-	var msg = chat1Elements.chatInput.value;
+	var msg = chatElements.chatInput.value;
 	if(msg!='') {
-		chat1Elements.chatInput.value = "";
+		chatElements.chatInput.value = "";
 		sendMsg('chat', msg);
-		pasteChatMsg(chat1.myName, msg);
+		pasteChatMsg(chat.myName, msg);
 		scrollDownChatBox();
 	}
 };
@@ -627,38 +629,38 @@ function pasteChatMsg(sender, msg) {
 	var senderName,
 		settings,
 		pClass;
-	if(sender == chat1.myName) {
+	if(sender == chat.myName) {
 		senderName = 'Me';
-		settings = chat1.settings.mine;
+		settings = chat.settings.mine;
 		pClass = '';
 	} else {
 		senderName = sender;
-		settings = chat1.settings.opponent;
+		settings = chat.settings.opponent;
 		pClass = ' class="opponentLine"';
 	}
 
-	chat1Elements.chatBox.innerHTML += '<p'+pClass+'><span style="font-size:'+settings.fontSize+';color:'+settings.color+'">'+senderName+': </span><span style="font-family:\''+settings.fontFamily+'\';font-size:'+settings.fontSize+';color:'+settings.color+'">' + msg + '</span></p>';
+	chatElements.chatBox.innerHTML += '<p'+pClass+'><span style="font-size:'+settings.fontSize+';color:'+settings.color+'">'+senderName+': </span><span style="font-family:\''+settings.fontFamily+'\';font-size:'+settings.fontSize+';color:'+settings.color+'">' + msg + '</span></p>';
 }
 
 function scrollDownChatBox() {
-	chat1Elements.chatBox.scrollTop = chat1Elements.chatBox.scrollHeight;
+	chatElements.chatBox.scrollTop = chatElements.chatBox.scrollHeight;
 }
 
 function setSettings() {
 	//	THOSE SETTINGS ARE OBSOLETE AND _BADLY IMPLEMENTED_!
-	//	but in the future - if stuff could be saved- settings should ALWAYS be put to chat1.settings
+	//	but in the future - if stuff could be saved- settings should ALWAYS be put to chat.settings
 	//	the settings itself could be generated dynamically with this function, and options would have an index
-	//	going in/from the chat1.settings (and not for example "150%")
+	//	going in/from the chat.settings (and not for example "150%")
 	//	So this function should be invoked then ONCE at start, and the settings button would have onclick=showSettings
 
 	//load previous settings in the dropdown lists
 	/*document.getElementById("mcolor").selectedIndex = getColorIndex(document.getElementById("chatInput").style.color);
 	document.getElementById("mfamily").selectedIndex = getFamilyIndex(document.getElementById("chatInput").style.fontFamily);
 	document.getElementById("msize").selectedIndex = getSizeIndex(document.getElementById("chatInput").style.fontSize);
-	document.getElementById("ocolor").selectedIndex = getColorIndex(chat1.settings.opponent.color);
-	document.getElementById("ofamily").selectedIndex = getFamilyIndex(chat1.settings.opponent.fontFamily);
-	document.getElementById("osize").selectedIndex = getSizeIndex(chat1.settings.opponent.fontSize);
-	if(chat1.invisible) {
+	document.getElementById("ocolor").selectedIndex = getColorIndex(chat.settings.opponent.color);
+	document.getElementById("ofamily").selectedIndex = getFamilyIndex(chat.settings.opponent.fontFamily);
+	document.getElementById("osize").selectedIndex = getSizeIndex(chat.settings.opponent.fontSize);
+	if(chat.invisible) {
 		document.getElementById("mstatus").selectedIndex = 1;
 	}*/
 
@@ -667,32 +669,32 @@ function setSettings() {
 
 function saveSettings() {
 	mfc = document.getElementById("mcolor");
-	chat1.settings.mine.color = mfc.options[mfc.selectedIndex].value;
+	chat.settings.mine.color = mfc.options[mfc.selectedIndex].value;
 	mff = document.getElementById("mfamily");
-	chat1.settings.mine.fontFamily = mff.options[mff.selectedIndex].value;
+	chat.settings.mine.fontFamily = mff.options[mff.selectedIndex].value;
 	mfs = document.getElementById("msize");
-	chat1.settings.mine.fontSize = mfs.options[mfs.selectedIndex].value;
+	chat.settings.mine.fontSize = mfs.options[mfs.selectedIndex].value;
 
 	ofc = document.getElementById("ocolor");
-	chat1.settings.opponent.color = ofc.options[ofc.selectedIndex].value;
+	chat.settings.opponent.color = ofc.options[ofc.selectedIndex].value;
 	off = document.getElementById("ofamily");
-	chat1.settings.opponent.fontFamily = off.options[off.selectedIndex].value;
+	chat.settings.opponent.fontFamily = off.options[off.selectedIndex].value;
 	ofs = document.getElementById("osize");
-	chat1.settings.opponent.fontSize = ofs.options[ofs.selectedIndex].value;
+	chat.settings.opponent.fontSize = ofs.options[ofs.selectedIndex].value;
 
 //apply
-	chat1Elements.chatInput.style.color = chat1.settings.mine.color;
-	chat1Elements.chatInput.style.fontFamily = chat1.settings.mine.fontFamily;
-	chat1Elements.chatInput.style.fontSize = chat1.settings.mine.fontSize;
+	chatElements.chatInput.style.color = chat.settings.mine.color;
+	chatElements.chatInput.style.fontFamily = chat.settings.mine.fontFamily;
+	chatElements.chatInput.style.fontSize = chat.settings.mine.fontSize;
 
 	mst = document.getElementById("mstatus");
-	chat1.users[chat1.myName] = mst.options[mst.selectedIndex].value;
+	chat.users[chat.myName] = mst.options[mst.selectedIndex].value;
 
-	if(chat1.users[chat1.myName] == 'offline') {
-		chat1.invisible = true;
+	if(chat.users[chat.myName] == 'offline') {
+		chat.invisible = true;
 		sendStatus('logout', true);
 	} else {
-		chat1.invisible = false;
+		chat.invisible = false;
 		sendStatus('online', true);
 	}
 
@@ -722,38 +724,38 @@ function mark(attr) {
 function onclickContactAction(contactName) {
 	// Invite and go to Stage 2, waiting for response from invitee.
 	setContactAsInvited(contactName)
-	sendInvitation('invite', chat1.myName, contactName);
+	sendInvitation('invite', chat.myName, contactName);
 /*	alert(displayName);
 	alert(contactName);
 if (displayName == contactName) {
-   	sendInvitation('invite', chat1.myName, contactName);
+   	sendInvitation('invite', chat.myName, contactName);
 }
 else {
     setStatusMessage('contact not in your List...');
 }*/
-	chat1.useMyDeck = true;
-	chat1.oName = contactName;
+	chat.useMyDeck = true;
+	chat.oName = contactName;
 }
 
 function cancelInvitation(invitee){
 	resetContact(invitee, true);
 
-   	sendInvitation('cancelInvite', chat1.myName, invitee);
+   	sendInvitation('cancelInvite', chat.myName, invitee);
 
-	chat1.useMyDeck = false;
-	chat1.oName = "";
+	chat.useMyDeck = false;
+	chat.oName = "";
 }
 
 function acceptInvitation(inviter){
-	chat1.oName = inviter;
-	chat1.useMyDeck = false;
-	chat1.engaged = inviter;
+	chat.oName = inviter;
+	chat.useMyDeck = false;
+	chat.engaged = inviter;
 
     // Enter Stage 3: Start the app.
 	setappUI();
 	showapp();
 
-   	sendInvitation('acceptInvitation', inviter, chat1.myName);
+   	sendInvitation('acceptInvitation', inviter, chat.myName);
 
 	sendStatus('chatting');
 };
@@ -765,7 +767,7 @@ function confirmExitapp() {
 
 function cancelExitapp() {
 	setContButton('empty');
-	if(chat1.useMyDeck) {
+	if(chat.useMyDeck) {
 		 setStatusMessage('Click Start to Chat');
 		 setContButton('start');
 	} else {
@@ -786,7 +788,7 @@ function appClosed() {
 };
 
 function anotherapp() {
-	if(chat1.useMyDeck) {
+	if(chat.useMyDeck) {
 	   setStatusMessage('New app?');
 	   setContButton('newapp+');
 	}
@@ -819,7 +821,7 @@ function exitapp() {
 	appClosed();
 
 	//if i'm not invisible i send the event login, showing my presence
-	if(!chat1.invisible) {
+	if(!chat.invisible) {
 		sendStatus('login');
 	}
 
@@ -828,24 +830,24 @@ function exitapp() {
 
 function resetApp() {
 	//var reset
-	chat1.users = [];
-	chat1.engaged = '';
-	chat1.useMyDeck = false;
-	chat1.oName = "";
+	chat.users = [];
+	chat.engaged = '';
+	chat.useMyDeck = false;
+	chat.oName = "";
 
 	//reset cards and buttons
 	switchUICard("1", "b", "");
 	switchUICard("2", "b", "");
 	setContButton('empty');
-	chat1Elements.newElem.className = "button2";
-	chat1Elements.endElem.className = "button2";
+	chatElements.newElem.className = "button2";
+	chatElements.endElem.className = "button2";
 
 	//reset contacts
-	chat1Elements.onlineContacts.innerHTML = '';
-	chat1Elements.liveInvitations.innerHTML = '';
+	chatElements.onlineContacts.innerHTML = '';
+	chatElements.liveInvitations.innerHTML = '';
 
 	//reset chat history
-	chat1Elements.chatBox.innerHTML = '';
+	chatElements.chatBox.innerHTML = '';
 }
 
 // End of file.
